@@ -32,7 +32,7 @@ class FeedModelProvider with ChangeNotifier {
       id: 2,
       mainPhotoUrl:
           "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      nickname: "lorem_ipsum",
+      nickname: "jsfdklfsd_fd",
       userAvatar:
           "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
       description: "Lorem Ipsum is simply dummy",

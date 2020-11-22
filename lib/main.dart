@@ -5,23 +5,24 @@ import 'package:my_instagram/models/Feed.dart';
 // import 'package:my_instagram/pages/home_page.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_instagram/widgets/stories.dart';
-import 'package:my_instagram/widgets/message.dart';
-// ignore_for_file: public_member_api_docs, lines_longer_than_80_chars
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'models/Post.dart';
 import 'models/Story.dart';
 
-void main() => runApp(MultiProvider(providers: [
-      ChangeNotifierProvider<FeedModelProvider>(
-        create: (context) => FeedModelProvider(),
-      ),
-      ChangeNotifierProvider<StoriesFeed>(
-        create: (context) => StoriesFeed(),
-      )
-    ], child: MyApp()));
+void main() => runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<StoriesFeed>(
+          create: (context) => StoriesFeed(),
+        ),
+        ChangeNotifierProvider<FeedModelProvider>(
+          create: (context) => FeedModelProvider(),
+        )
+      ],
+      child: MyApp(),
+    ));
 
 class MyApp extends StatelessWidget {
   @override

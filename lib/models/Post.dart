@@ -38,15 +38,14 @@ class PostModel with ChangeNotifier {
 
   void incrementLikes() {
     likesCount++;
-    notifyListeners();
   }
 
   void decrementLikes() {
     likesCount--;
-    notifyListeners();
   }
 
   void addComment(Comment comment) {
     comments.add(comment);
+    notifyListeners();
   }
 }

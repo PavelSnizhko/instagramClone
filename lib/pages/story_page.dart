@@ -9,7 +9,8 @@ class StoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<StoriesFeed>().getElementById(id);
+    final data =
+        Provider.of<StoriesFeed>(context, listen: false).getElementById(id);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_instagram/models/Comment.dart';
 import 'package:my_instagram/models/Feed.dart';
 import 'package:my_instagram/models/Post.dart';
+import 'package:my_instagram/widgets/post.dart';
 import 'package:provider/provider.dart';
 
 class CommentPage extends StatelessWidget {
@@ -10,6 +11,7 @@ class CommentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    PostModel post = Provider.of<PostModel>(context);
     TextEditingController nameController = TextEditingController();
     return Scaffold(
       appBar: AppBar(
@@ -30,37 +32,31 @@ class CommentPage extends StatelessWidget {
               })
         ],
       ),
-      body: Consumer<FeedModelProvider>(
-        builder: (context, post, child) {
-          var postById = post.getElementById(id);
-          print(postById.comments);
-          return Column(children: [
-            postById.comments.length != 0
-                ? ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: postById.comments.length,
-                    itemBuilder: (context, index) {
-                      return Text(postById.comments[index].comment);
-                    })
-                : Container(),
-            TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Add your comment',
-                  suffixIcon: IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () {
-                        var message = nameController.text;
-                        if (message != '') {
-                          postById.addComment(Comment(message));
-                        }
-                      }),
-                ))
-          ]);
-        },
-      ),
+      body: Column(children: [
+        post.comments.length != 0
+            ? ListView.builder(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: post.comments.length,
+                itemBuilder: (context, index) {
+                  return Text(post.comments[index].comment);
+                })
+            : Container(),
+        TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Add your comment',
+              suffixIcon: IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    var message = nameController.text;
+                    if (message != '') {
+                      post.addComment(Comment(message));
+                    }
+                  }),
+            ))
+      ]),
     );
   }
 }

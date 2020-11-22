@@ -166,9 +166,12 @@ class Post extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                      builder: (context) => CommentPage(
-                            id: post.id,
-                          )),
+                    builder: (BuildContext context) => MultiProvider(
+                        providers: [ChangeNotifierProvider.value(value: post)],
+                        builder: (context, child) => CommentPage(
+                              id: post.id,
+                            )),
+                  ),
                 );
               },
             ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_instagram/models/Comment.dart';
 import 'package:my_instagram/models/Feed.dart';
 import 'package:my_instagram/models/Post.dart';
 import 'package:my_instagram/models/Story.dart';
@@ -21,6 +22,7 @@ class Post extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final post = context.read<FeedModelProvider>().getElementById(id);
+    TextEditingController commentController = TextEditingController();
     final post = Provider.of<PostModel>(context);
     final currentPost =
         Provider.of<FeedModelProvider>(context).getElementById(id);
@@ -92,10 +94,14 @@ class Post extends StatelessWidget {
                     color: Colors.black,
                   );
                 }),
-                Icon(
-                  CupertinoIcons.chat_bubble,
-                  size: 35,
-                ),
+                IconButton(
+                    icon: Icon(
+                      CupertinoIcons.chat_bubble,
+                      size: 35,
+                    ),
+                    onPressed: () {
+                      addCommetPage(context, post);
+                    }),
                 Transform.rotate(
                   angle: -24 * pi / 180,
                   child: IconButton(
@@ -140,22 +146,7 @@ class Post extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(bottom: 6, left: 15),
-            child: Row(
-              children: [
-                Text(
-                  post.nickname,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                SizedBox(width: 8.0),
-                Flexible(
-                  child: Text(
-                    post.description,
-                    style: TextStyle(fontSize: 15.0),
-                    overflow: TextOverflow.clip,
-                  ),
-                )
-              ],
-            ),
+            child: buildDescription(context, post),
           ),
           Padding(
             child: GestureDetector(
@@ -164,15 +155,7 @@ class Post extends StatelessWidget {
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => MultiProvider(
-                        providers: [ChangeNotifierProvider.value(value: post)],
-                        builder: (context, child) => CommentPage(
-                              id: post.id,
-                            )),
-                  ),
-                );
+                addCommetPage(context, post);
               },
             ),
             padding: EdgeInsets.only(bottom: 0, left: 15),
@@ -189,12 +172,18 @@ class Post extends StatelessWidget {
             SizedBox(
               width: 300,
               child: TextField(
-                  decoration: InputDecoration(
-                hintText: 'Add comment',
-                border: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-              )),
+                controller: commentController,
+                decoration: InputDecoration(
+                  hintText: 'Add comment',
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                ),
+                onSubmitted: (value) {
+                  String message = commentController.text;
+                  if (message != '') post.addComment(Comment(message));
+                },
+              ),
             )
           ]),
           Padding(
@@ -208,6 +197,43 @@ class Post extends StatelessWidget {
           height: 10,
         )
       ],
+    );
+  }
+
+  void addCommetPage(context, PostModel post) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (BuildContext context) => MultiProvider(
+            providers: [ChangeNotifierProvider.value(value: post)],
+            builder: (context, child) => CommentPage(
+                  id: post.id,
+                )),
+      ),
+    );
+  }
+
+  static Widget buildDescription(context, PostModel post) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          RichText(
+              text: TextSpan(children: <TextSpan>[
+            TextSpan(
+                text: post.nickname,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  wordSpacing: 5,
+                )),
+            TextSpan(text: "   "),
+            TextSpan(
+              text: post.description,
+            )
+          ]))
+        ],
+      ),
     );
   }
 }

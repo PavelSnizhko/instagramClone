@@ -3,6 +3,7 @@ import 'package:my_instagram/models/Comment.dart';
 import 'package:my_instagram/models/Feed.dart';
 import 'package:my_instagram/models/Post.dart';
 import 'package:my_instagram/widgets/post.dart';
+import 'package:my_instagram/widgets/stories.dart';
 import 'package:provider/provider.dart';
 
 class CommentPage extends StatelessWidget {
@@ -33,6 +34,24 @@ class CommentPage extends StatelessWidget {
         ],
       ),
       body: Column(children: [
+        Row(children: [
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: StoryIcon(
+              true,
+              id: id,
+              height: 50,
+              width: 50,
+              radius: 30,
+            ),
+          ),
+          Padding(
+              padding: EdgeInsets.only(left: 10, top: 30, bottom: 10),
+              child: Post.buildDescription(context, post)),
+        ]),
+        Divider(
+          color: Colors.white,
+        ),
         post.comments.length != 0
             ? ListView.builder(
                 scrollDirection: Axis.vertical,

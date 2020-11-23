@@ -13,7 +13,8 @@ class FeedModelProvider with ChangeNotifier {
       nickname: "lorem_ipsum",
       userAvatar:
           "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      description: "Lorem Ipsum is simply dummy",
+      description:
+          "Lorem Ipsum is simply dummy but not yamy. Hey, you! Yes you. Get out of here.",
       userPhoto:
           "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
     ),

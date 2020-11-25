@@ -1,4 +1,4 @@
-import 'package:my_instagram/models/Feed.dart';
+import 'package:my_instagram/models/feed.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:provider/provider.dart';

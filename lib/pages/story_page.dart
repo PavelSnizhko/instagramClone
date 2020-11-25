@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_instagram/models/Story.dart';
+import 'package:my_instagram/models/story_model.dart';
 import 'package:provider/provider.dart';
 
 class StoryPage extends StatelessWidget {
@@ -9,8 +9,9 @@ class StoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //Change to provider or something else for stories
     final data =
-        Provider.of<StoriesFeed>(context, listen: false).getElementById(id);
+        Provider.of<StoriesFeed>(context, listen: false).getAllStories()[id];
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

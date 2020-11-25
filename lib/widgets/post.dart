@@ -1,10 +1,11 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_instagram/models/Comment.dart';
-import 'package:my_instagram/models/Feed.dart';
-import 'package:my_instagram/models/Post.dart';
-import 'package:my_instagram/models/Story.dart';
+import 'package:my_instagram/models/comment_model.dart';
+import 'package:my_instagram/models/feed.dart';
+import 'package:my_instagram/models/post_model.dart';
+import 'package:my_instagram/models/story_model.dart';
+import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/comment_page.dart';
 
 import 'stories.dart';
@@ -24,8 +25,11 @@ class Post extends StatelessWidget {
     // final post = context.read<FeedModelProvider>().getElementById(id);
     TextEditingController commentController = TextEditingController();
     final post = Provider.of<PostModel>(context);
-    final currentPost =
-        Provider.of<FeedModelProvider>(context).getElementById(id);
+    final user = Provider.of<User>(context, listen: false);
+    print(user.friends);
+    print(post.userId);
+    final userByIdData = user.getFriendById(post.userId);
+
     // final postId = post.getElementById(id);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +50,7 @@ class Post extends StatelessWidget {
                 ),
                 Padding(
                   padding: EdgeInsets.only(left: 12),
-                  child: Text(post.nickname,
+                  child: Text(userByIdData.nickname,
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
@@ -146,7 +150,8 @@ class Post extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(bottom: 6, left: 15),
-            child: buildDescription(context, post),
+            child: buildDescription(
+                context, userByIdData.nickname, post.description),
           ),
           Padding(
             child: GestureDetector(
@@ -181,7 +186,9 @@ class Post extends StatelessWidget {
                 ),
                 onSubmitted: (value) {
                   String message = commentController.text;
-                  if (message != '') post.addComment(Comment(message));
+                  if (message != '')
+                    post.addComment(Comment(
+                        userByIdData.id, message, post.id, userByIdData.id));
                 },
               ),
             )
@@ -212,7 +219,7 @@ class Post extends StatelessWidget {
     );
   }
 
-  static Widget buildDescription(context, PostModel post) {
+  static Widget buildDescription(context, String nickname, String description) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.8,
       child: Column(
@@ -221,7 +228,7 @@ class Post extends StatelessWidget {
           RichText(
               text: TextSpan(children: <TextSpan>[
             TextSpan(
-                text: post.nickname,
+                text: nickname,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
@@ -229,7 +236,7 @@ class Post extends StatelessWidget {
                 )),
             TextSpan(text: "   "),
             TextSpan(
-              text: post.description,
+              text: description,
             )
           ]))
         ],
@@ -241,8 +248,11 @@ class Post extends StatelessWidget {
 class Feed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final postsData = Provider.of<FeedModelProvider>(context);
-
+    final FeedModel feed = Provider.of<FeedModel>(context);
+    List<PostModel> posts = feed.getAllPosts();
+    final User user = Provider.of<User>(context);
+    addTwoFriends(user);
+    print(feed.getCountOfPosts().toString() + "elements");
     return Column(children: [
       SizedBox(height: 100, child: StoriesList()),
       Divider(
@@ -252,16 +262,69 @@ class Feed extends StatelessWidget {
           child: ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
-              itemCount: postsData.posts.length,
+              itemCount: feed.getCountOfPosts(),
               itemBuilder: (context, index) {
                 // print(postsData.posts.length);
                 print(index);
                 return MultiProvider(providers: [
                   ChangeNotifierProvider.value(
-                    value: postsData.posts[index],
+                    value: posts[index],
                   )
                 ], child: Post(id: index));
               })),
     ]);
+  }
+
+  // temporaty to create fake friends and their posts then change to http request for users data and create based on this new user
+  void addTwoFriends(User user) {
+    user.addFriend(User.changeFriendsStories(
+        User.changeFriendsPosts(
+            User(
+                1,
+                'valera_ok',
+                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+                1),
+            [
+              PostModel(
+                  id: 1,
+                  mainPhotoUrl:
+                      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+                  description: "Lorem Ipsum is simply dummy valera_ok",
+                  userId: 1),
+              PostModel(
+                  id: 2,
+                  mainPhotoUrl:
+                      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+                  description: "Lorem Ipsum is simply dummy valera_ok ",
+                  userId: 1),
+            ]),
+        [
+          StoryModel(
+              6,
+              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+              '',
+              1)
+        ]));
+    user.addFriend(User.changeFriendsPosts(
+      User(
+          2,
+          'PashOk',
+          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+          2),
+      [
+        PostModel(
+            id: 3,
+            mainPhotoUrl:
+                "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+            description: "This is post for my friend.I'm  tttt_2",
+            userId: 2),
+        PostModel(
+            id: 4,
+            mainPhotoUrl:
+                "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+            description: "This is my second  post. I'm  tttt_2",
+            userId: 2),
+      ],
+    ));
   }
 }

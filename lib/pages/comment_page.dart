@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_instagram/models/Comment.dart';
-import 'package:my_instagram/models/Feed.dart';
-import 'package:my_instagram/models/Post.dart';
+import 'package:my_instagram/models/comment_model.dart';
+import 'package:my_instagram/models/feed.dart';
+import 'package:my_instagram/models/post_model.dart';
+import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:my_instagram/widgets/stories.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ class CommentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     PostModel post = Provider.of<PostModel>(context);
+    User user = Provider.of<User>(context).getFriendById(post.userId);
     TextEditingController nameController = TextEditingController();
     return Scaffold(
       appBar: AppBar(
@@ -47,7 +49,8 @@ class CommentPage extends StatelessWidget {
           ),
           Padding(
               padding: EdgeInsets.only(left: 10, top: 30, bottom: 10),
-              child: Post.buildDescription(context, post)),
+              child: Post.buildDescription(
+                  context, user.nickname, post.description)),
         ]),
         Divider(
           color: Colors.white,
@@ -58,7 +61,7 @@ class CommentPage extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: post.comments.length,
                 itemBuilder: (context, index) {
-                  return Text(post.comments[index].comment);
+                  return Text(post.comments[index].commentText);
                 })
             : Container(),
         TextField(
@@ -71,7 +74,8 @@ class CommentPage extends StatelessWidget {
                   onPressed: () {
                     var message = nameController.text;
                     if (message != '') {
-                      post.addComment(Comment(message));
+                      post.addComment(
+                          Comment(user.id, message, post.id, user.id));
                     }
                   }),
             ))

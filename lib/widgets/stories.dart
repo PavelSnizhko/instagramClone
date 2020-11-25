@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:my_instagram/models/Feed.dart';
-import 'package:my_instagram/models/Story.dart';
+import 'package:my_instagram/models/feed.dart';
+import 'package:my_instagram/models/story_model.dart';
+import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/story_page.dart';
 import 'package:provider/provider.dart';
 
 class StoriesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final stories = Provider.of<StoriesFeed>(context).stories;
-    print(stories);
+    final user = Provider.of<User>(context, listen: false);
+    final feedOfStories = Provider.of<StoriesFeed>(context);
+
+    StoryModel story = user.getStoryById(0);
+    print("object 8889");
+    print(story);
+    final List<StoryModel> stories = feedOfStories.getAllStories();
     return ListView(
       // physics: ClampingScrollPhysics(),
       scrollDirection: Axis.horizontal,
@@ -156,8 +162,7 @@ class StoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StoriesFeed>(builder: (context, story, child) {
-      final storyById = story.getElementById(id);
+    return Consumer<User>(builder: (context, user, child) {
       return Column(
         children: [
           Container(
@@ -166,10 +171,11 @@ class StoryIcon extends StatelessWidget {
                 : EdgeInsets.only(left: 15),
             width: width,
             height: height,
-            decoration: (storyById.active == true)
+            //TODO: To provide active and no active story and hero after correct way of use StoryIcon (maybe ok)
+            decoration: (user.getStoryById(0).active == true)
                 ? BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(storyById.userAvatar),
+                      image: NetworkImage(user.userAvatar),
                       fit: BoxFit.cover,
                     ),
                     borderRadius: BorderRadius.all(new Radius.circular(radius)),
@@ -177,7 +183,7 @@ class StoryIcon extends StatelessWidget {
                   )
                 : BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(storyById.userAvatar),
+                      image: NetworkImage(user.userAvatar),
                       fit: BoxFit.cover,
                     ),
                     borderRadius: BorderRadius.all(new Radius.circular(radius)),
@@ -186,7 +192,7 @@ class StoryIcon extends StatelessWidget {
           !isForPost
               ? Padding(
                   padding: EdgeInsets.only(left: 18),
-                  child: Text(storyById.nickname))
+                  child: Text(user.nickname))
               : Padding(padding: EdgeInsets.only(left: 18)),
         ], // border: Border.all(width: 4.0, color: Colors.red),
       );

@@ -8,12 +8,7 @@ import 'package:provider/provider.dart';
 class StoriesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<User>(context, listen: false);
     final feedOfStories = Provider.of<StoriesFeed>(context);
-
-    StoryModel story = user.getStoryById(0);
-    print("object 8889");
-    print(story);
     final List<StoryModel> stories = feedOfStories.getAllStories();
     return ListView(
       // physics: ClampingScrollPhysics(),
@@ -53,24 +48,16 @@ class StoriesList extends StatelessWidget {
                   radius: 50,
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (context) => StoryPage(id: index)),
-                  );
+                  Navigator.pushNamed(context, '/stories', arguments: index);
+                  // Navigator.of(context).push(
+                  //   MaterialPageRoute(
+                  //       builder: (context) => StoryPage(id: index)),
+                  // );
                 },
               ),
             ),
           ),
         )
-        // itemBuilder: (context, index) => Hero(
-        //   tag: stories.[index].imgUrl,
-        //   child: GestureDetector(
-        //     onTap: () {
-        //       Navigator.of(context).push(MaterialPageRoute(
-        //         builder: (context) => ItemPage(
-        //           productId: cartItems.keys.toList()[index],
-        //         ),),
-        //       );
 
         // StoryIcon(
         //   url:

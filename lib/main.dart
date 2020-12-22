@@ -3,6 +3,9 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:my_instagram/models/feed.dart';
 import 'package:my_instagram/models/user_model.dart';
+import 'package:my_instagram/pages/comment_page.dart';
+import 'package:my_instagram/pages/story_page.dart';
+import 'package:my_instagram/services/api_service.dart';
 // import 'package:my_instagram/pages/home_page.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +15,7 @@ import 'package:provider/provider.dart';
 
 import 'models/post_model.dart';
 import 'models/story_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //Temporary for new stories then get from http
 void addTestStories(StoriesFeed feed) {
@@ -31,37 +35,97 @@ void addTestStories(StoriesFeed feed) {
         '',
         2,
       ));
+  feed.addStories(
+      3,
+      StoryModel(
+        3,
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+        '',
+        1,
+      ));
+  feed.addStories(
+      4,
+      StoryModel(
+        4,
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+        '',
+        2,
+      ));
 }
 
-void main() => runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<User>(
-          create: (context) => User(
-              0,
-              "snizhko",
-              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-              0),
-        ),
-        ChangeNotifierProvider<FeedModel>(
-          create: (context) => FeedModel(0, 0),
-        ),
-        ChangeNotifierProvider<StoriesFeed>(create: (context) {
-          StoriesFeed storyFeed = StoriesFeed(0, 0);
-          addTestStories(storyFeed);
-          return storyFeed;
-        })
-      ],
-      child: MyApp(),
-    ));
+SharedPreferences sp;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  sp = await SharedPreferences.getInstance();
+  // await sp.clear();
+  //used singleton for this service
+  ApiUserService apiService = ApiUserService.instance;
+  APIFeedService apiFeedService = APIFeedService();
+  FeedModel feed;
+  StoriesFeed storiesFeed;
+  await apiFeedService.getFeedByUserId(0).then((feedObj) {
+    if (feedObj != null) {
+      feed = feedObj;
+    }
+  });
+
+  //check_friends_status can be only true or null if wasn't created
+  runApp(FutureBuilder(
+      future: apiService.getUser(0),
+      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+        if (!snapshot.hasData) {
+          return MaterialApp(
+              // theme: ThemeData.dark(),
+              title: "Waiting for data",
+              home: Center(child: CircularProgressIndicator()));
+        } else {
+          return MultiProvider(providers: [
+            ChangeNotifierProvider<User>(create: (context) {
+              User user = snapshot.data;
+              return user;
+            }),
+            ChangeNotifierProvider<FeedModel>(
+              create: (context) => feed ?? FeedModel(0, 0),
+            ),
+            ChangeNotifierProvider<StoriesFeed>(create: (context) {
+              StoriesFeed storyFeed = StoriesFeed(0, 0);
+              addTestStories(storyFeed);
+              return storyFeed;
+            })
+          ], child: MyApp());
+        }
+      }));
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.dark(),
-      title: "My implementation",
-      home: HomePage(),
-    );
+        theme: ThemeData.dark(),
+        title: "My implementation",
+        initialRoute: '/',
+        onGenerateRoute: (RouteSettings settings) {
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(builder: (context) => HomePage());
+              break;
+            case '/comment':
+              var arguments = settings.arguments as Map<String, PostModel>;
+              return MaterialPageRoute(
+                  builder: (BuildContext context) => MultiProvider(
+                          providers: [
+                            ChangeNotifierProvider.value(
+                                value: arguments['post'])
+                          ],
+                          builder: (context, child) =>
+                              CommentPage(id: arguments['post'].id)));
+              break;
+            case '/stories':
+              var id = settings.arguments as int;
+              return MaterialPageRoute(
+                  builder: (BuildContext context) => StoryPage(id: id));
+          }
+        });
   }
 }
 

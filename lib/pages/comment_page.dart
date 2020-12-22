@@ -7,7 +7,14 @@ import 'package:my_instagram/widgets/post.dart';
 import 'package:my_instagram/widgets/stories.dart';
 import 'package:provider/provider.dart';
 
+class ScreenArguments {
+  final int id;
+  ScreenArguments(this.id);
+}
+
 class CommentPage extends StatelessWidget {
+  static const routeName = '/comment';
+
   final int id;
   const CommentPage({Key key, this.id}) : super(key: key);
 
@@ -21,7 +28,8 @@ class CommentPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            // Navigator.of(context).pop();
+            Navigator.pop(context);
           },
         ),
         title: Center(

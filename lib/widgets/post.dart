@@ -7,7 +7,9 @@ import 'package:my_instagram/models/post_model.dart';
 import 'package:my_instagram/models/story_model.dart';
 import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/comment_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
 import 'stories.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 import 'dart:io';
@@ -25,10 +27,12 @@ class Post extends StatelessWidget {
     // final post = context.read<FeedModelProvider>().getElementById(id);
     TextEditingController commentController = TextEditingController();
     final post = Provider.of<PostModel>(context);
-    final user = Provider.of<User>(context, listen: false);
-    print(user.friends);
-    print(post.userId);
-    final userByIdData = user.getFriendById(post.userId);
+    final user = Provider.of<User>(context);
+    User userByIdData;
+    if (user.friends.length != 2)
+      return Center(child: CircularProgressIndicator());
+    else
+      userByIdData = user.getFriendById(post.userId);
 
     // final postId = post.getElementById(id);
     return Column(
@@ -70,6 +74,7 @@ class Post extends StatelessWidget {
             child: InkWell(
               onDoubleTap: () {
                 post.changeLikeStatus();
+                sp.setBool(post.id.toString(), post.like);
               },
               child: Image(
                 image: NetworkImage(post.mainPhotoUrl),
@@ -86,15 +91,17 @@ class Post extends StatelessWidget {
                   return IconButton(
                     icon: Icon(
                       Icons.favorite,
-                      color: post.like ? Colors.red : Colors.white,
+                      color: (post.like ||
+                              (sp.getBool(post.id.toString()) ?? false))
+                          ? Colors.red
+                          : Colors.white,
                       size: 25,
                     ),
                     onPressed: () {
                       post.changeLikeStatus();
-                      // scaffoldKey.currentState.showSnackBar(snackBar);
+                      sp.setBool(post.id.toString(), post.like);
                     },
                     // tooltip: 'Show Snackbar',
-
                     color: Colors.black,
                   );
                 }),
@@ -104,7 +111,7 @@ class Post extends StatelessWidget {
                       size: 35,
                     ),
                     onPressed: () {
-                      addCommetPage(context, post);
+                      // addCommetPage(context, post);
                     }),
                 Transform.rotate(
                   angle: -24 * pi / 180,
@@ -143,7 +150,7 @@ class Post extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(bottom: 6, left: 15),
             child: Text(
-              ("${post.likesCount} likes"),
+              ("${((sp.getInt(post.id.toString() + 'count') ?? 0))} likes"),
               textAlign: TextAlign.left,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
@@ -159,8 +166,10 @@ class Post extends StatelessWidget {
                 "View all ${post.comments.length} comments",
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
-              onTap: () {
-                addCommetPage(context, post);
+              onTap: () async {
+                await Navigator.pushNamed(context, '/comment',
+                    arguments: {'post': post});
+                // addCommetPage(context, post);
               },
             ),
             padding: EdgeInsets.only(bottom: 0, left: 15),
@@ -207,17 +216,19 @@ class Post extends StatelessWidget {
     );
   }
 
-  void addCommetPage(context, PostModel post) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (BuildContext context) => MultiProvider(
-            providers: [ChangeNotifierProvider.value(value: post)],
-            builder: (context, child) => CommentPage(
-                  id: post.id,
-                )),
-      ),
-    );
-  }
+  // void addCommetPage(context, PostModel post) {
+  //   Navigator.pushNamed(context, '/comment', arguments: {});
+
+  //   // Navigator.of(context).push(
+  //   //   MaterialPageRoute(
+  //   //     builder: (BuildContext context) => MultiProvider(
+  //   //         providers: [ChangeNotifierProvider.value(value: post)],
+  //   //         builder: (context, child) => CommentPage(
+  //   //               id: post.id,
+  //   //             )),
+  //   //   ),
+  //   // );
+  // }
 
   static Widget buildDescription(context, String nickname, String description) {
     return Container(
@@ -250,9 +261,21 @@ class Feed extends StatelessWidget {
   Widget build(BuildContext context) {
     final FeedModel feed = Provider.of<FeedModel>(context);
     List<PostModel> posts = feed.getAllPosts();
-    final User user = Provider.of<User>(context);
-    addTwoFriends(user);
-    print(feed.getCountOfPosts().toString() + "elements");
+    if ((sp.getBool('check_friends_status') == null)) {
+      final User user = Provider.of<User>(context, listen: false);
+      sp.setBool('check_friends_status', true);
+      user.addFriend(User(
+          1,
+          'valera_ok',
+          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+          1, []));
+      user.addFriend(User(
+          2,
+          'PashOk',
+          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+          2, []));
+    }
+
     return Column(children: [
       SizedBox(height: 100, child: StoriesList()),
       Divider(
@@ -264,8 +287,6 @@ class Feed extends StatelessWidget {
               shrinkWrap: true,
               itemCount: feed.getCountOfPosts(),
               itemBuilder: (context, index) {
-                // print(postsData.posts.length);
-                print(index);
                 return MultiProvider(providers: [
                   ChangeNotifierProvider.value(
                     value: posts[index],
@@ -276,55 +297,56 @@ class Feed extends StatelessWidget {
   }
 
   // temporaty to create fake friends and their posts then change to http request for users data and create based on this new user
-  void addTwoFriends(User user) {
-    user.addFriend(User.changeFriendsStories(
-        User.changeFriendsPosts(
-            User(
-                1,
-                'valera_ok',
-                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-                1),
-            [
-              PostModel(
-                  id: 1,
-                  mainPhotoUrl:
-                      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-                  description: "Lorem Ipsum is simply dummy valera_ok",
-                  userId: 1),
-              PostModel(
-                  id: 2,
-                  mainPhotoUrl:
-                      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-                  description: "Lorem Ipsum is simply dummy valera_ok ",
-                  userId: 1),
-            ]),
-        [
-          StoryModel(
-              6,
-              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-              '',
-              1)
-        ]));
-    user.addFriend(User.changeFriendsPosts(
-      User(
-          2,
-          'PashOk',
-          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-          2),
-      [
-        PostModel(
-            id: 3,
-            mainPhotoUrl:
-                "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-            description: "This is post for my friend.I'm  tttt_2",
-            userId: 2),
-        PostModel(
-            id: 4,
-            mainPhotoUrl:
-                "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-            description: "This is my second  post. I'm  tttt_2",
-            userId: 2),
-      ],
-    ));
-  }
+  // void addTwoFriends(User user) {
+
+  //   user.addFriend(User.changeFriendsStories(
+  //       User.changeFriendsPosts(
+  //           User(
+  //               1,
+  //               'valera_ok',
+  //               "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+  //               1),
+  //           [
+  //             PostModel(
+  //                 id: 1,
+  //                 mainPhotoUrl:
+  //                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //                 description: "Lorem Ipsum is simply dummy valera_ok",
+  //                 userId: 1),
+  //             PostModel(
+  //                 id: 2,
+  //                 mainPhotoUrl:
+  //                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //                 description: "Lorem Ipsum is simply dummy valera_ok ",
+  //                 userId: 1),
+  //           ]),
+  //       [
+  //         StoryModel(
+  //             6,
+  //             "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+  //             '',
+  //             1)
+  //       ]));
+  //   user.addFriend(User.changeFriendsPosts(
+  //     User(
+  //         2,
+  //         'PashOk',
+  //         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+  //         2),
+  //     [
+  //       PostModel(
+  //           id: 3,
+  //           mainPhotoUrl:
+  //               "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //           description: "This is post for my friend.I'm  tttt_2",
+  //           userId: 2),
+  //       PostModel(
+  //           id: 4,
+  //           mainPhotoUrl:
+  //               "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //           description: "This is my second  post. I'm  tttt_2",
+  //           userId: 2),
+  //     ],
+  //   ));
+  // }
 }

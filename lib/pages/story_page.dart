@@ -17,7 +17,7 @@ class StoryPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.cancel),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(false);
           },
         ),
         title: Text("Title"),

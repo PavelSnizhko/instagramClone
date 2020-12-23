@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:my_instagram/models/feed.dart';
 import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/comment_page.dart';
-import 'package:my_instagram/pages/story_page.dart';
 import 'package:my_instagram/services/api_service.dart';
+import 'package:my_instagram/widgets/message.dart';
 // import 'package:my_instagram/pages/home_page.dart';
 import 'package:my_instagram/widgets/post.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,42 +17,6 @@ import 'models/post_model.dart';
 import 'models/story_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//Temporary for new stories then get from http
-void addTestStories(StoriesFeed feed) {
-  feed.addStories(
-      1,
-      StoryModel(
-        1,
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-        '',
-        1,
-      ));
-  feed.addStories(
-      2,
-      StoryModel(
-        2,
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-        '',
-        2,
-      ));
-  feed.addStories(
-      3,
-      StoryModel(
-        3,
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-        '',
-        1,
-      ));
-  feed.addStories(
-      4,
-      StoryModel(
-        4,
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-        '',
-        2,
-      ));
-}
-
 SharedPreferences sp;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,7 +26,6 @@ void main() async {
   ApiUserService apiService = ApiUserService.instance;
   APIFeedService apiFeedService = APIFeedService();
   FeedModel feed;
-  StoriesFeed storiesFeed;
   await apiFeedService.getFeedByUserId(0).then((feedObj) {
     if (feedObj != null) {
       feed = feedObj;
@@ -107,7 +70,7 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: (RouteSettings settings) {
           switch (settings.name) {
             case '/':
-              return MaterialPageRoute(builder: (context) => HomePage());
+              return MaterialPageRoute(builder: (context) => Home());
               break;
             case '/comment':
               var arguments = settings.arguments as Map<String, PostModel>;
@@ -120,16 +83,12 @@ class MyApp extends StatelessWidget {
                           builder: (context, child) =>
                               CommentPage(id: arguments['post'].id)));
               break;
-            case '/stories':
-              var id = settings.arguments as int;
-              return MaterialPageRoute(
-                  builder: (BuildContext context) => StoryPage(id: id));
           }
         });
   }
 }
 
-class HomePage extends StatelessWidget {
+class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,7 +120,10 @@ class HomePage extends StatelessWidget {
                     color: Colors.white,
                   ),
                   // tooltip: 'Show Snackbar',
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ChatScreen()));
+                  },
                   color: Colors.black,
                 )),
           ],
@@ -170,4 +132,40 @@ class HomePage extends StatelessWidget {
       body: Feed(),
     );
   }
+}
+
+//Temporary for new stories then get from http
+void addTestStories(StoriesFeed feed) {
+  feed.addStories(
+      1,
+      StoryModel(
+        1,
+        "https://i.pinimg.com/236x/dd/64/74/dd6474beaaa197bd7e1bac3d16d39afe.jpg",
+        '',
+        1,
+      ));
+  feed.addStories(
+      2,
+      StoryModel(
+        2,
+        "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+        '',
+        2,
+      ));
+  feed.addStories(
+      3,
+      StoryModel(
+        3,
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+        '',
+        1,
+      ));
+  feed.addStories(
+      4,
+      StoryModel(
+        4,
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+        '',
+        2,
+      ));
 }

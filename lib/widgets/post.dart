@@ -8,19 +8,47 @@ import 'package:my_instagram/models/story_model.dart';
 import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/comment_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../main.dart';
 import 'stories.dart';
-import 'package:cupertino_icons/cupertino_icons.dart';
-import 'dart:io';
-import 'package:provider/provider.dart';
-import 'package:image_size_getter/image_size_getter.dart';
-import 'package:image_size_getter/file_input.dart';
 
-class Post extends StatelessWidget {
+import 'package:provider/provider.dart';
+
+class Post extends StatefulWidget {
   final int id;
 
   Post({Key key, this.id}) : super(key: key);
+
+  @override
+  _PostState createState() => _PostState();
+
+  static Widget buildDescription(context, String nickname, String description) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          RichText(
+              text: TextSpan(children: <TextSpan>[
+            TextSpan(
+                text: nickname,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  wordSpacing: 5,
+                )),
+            TextSpan(text: "   "),
+            TextSpan(
+              text: description,
+            )
+          ]))
+        ],
+      ),
+    );
+  }
+}
+
+class _PostState extends State<Post> {
+  String lastCommet;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +75,8 @@ class Post extends StatelessWidget {
               Row(children: [
                 StoryIcon(
                   true,
-                  id: id,
+                  false,
+                  id: widget.id,
                   height: 50,
                   width: 50,
                   radius: 30,
@@ -157,7 +186,7 @@ class Post extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(bottom: 6, left: 15),
-            child: buildDescription(
+            child: Post.buildDescription(
                 context, userByIdData.nickname, post.description),
           ),
           Padding(
@@ -167,18 +196,35 @@ class Post extends StatelessWidget {
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
               onTap: () async {
-                await Navigator.pushNamed(context, '/comment',
-                    arguments: {'post': post});
+                var lastCommetString = await Navigator.pushNamed(
+                    context, '/comment',
+                    arguments: {'post': post}) as String;
+                setState(() {
+                  lastCommet = lastCommetString;
+                });
                 // addCommetPage(context, post);
               },
             ),
             padding: EdgeInsets.only(bottom: 0, left: 15),
           ),
+          lastCommet != null
+              ? Container(
+                  child: Row(children: [
+                    Text(
+                      user.nickname,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    Container(width: 10),
+                    Text(lastCommet, style: TextStyle(fontSize: 16)),
+                  ]),
+                  padding: EdgeInsets.only(left: 18, top: 10, bottom: 10),
+                )
+              : Container(),
           Row(children: [
-            // !- TODO: replace StoryIcon data to model
             StoryIcon(
               true,
-              id: id,
+              false,
+              id: widget.id,
               height: 30,
               width: 30,
               radius: 40,
@@ -215,45 +261,6 @@ class Post extends StatelessWidget {
       ],
     );
   }
-
-  // void addCommetPage(context, PostModel post) {
-  //   Navigator.pushNamed(context, '/comment', arguments: {});
-
-  //   // Navigator.of(context).push(
-  //   //   MaterialPageRoute(
-  //   //     builder: (BuildContext context) => MultiProvider(
-  //   //         providers: [ChangeNotifierProvider.value(value: post)],
-  //   //         builder: (context, child) => CommentPage(
-  //   //               id: post.id,
-  //   //             )),
-  //   //   ),
-  //   // );
-  // }
-
-  static Widget buildDescription(context, String nickname, String description) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.8,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          RichText(
-              text: TextSpan(children: <TextSpan>[
-            TextSpan(
-                text: nickname,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  wordSpacing: 5,
-                )),
-            TextSpan(text: "   "),
-            TextSpan(
-              text: description,
-            )
-          ]))
-        ],
-      ),
-    );
-  }
 }
 
 class Feed extends StatelessWidget {
@@ -277,7 +284,7 @@ class Feed extends StatelessWidget {
     }
 
     return Column(children: [
-      SizedBox(height: 100, child: StoriesList()),
+      SizedBox(height: 90, child: StoriesList()),
       Divider(
         color: Colors.white,
       ),
@@ -295,58 +302,4 @@ class Feed extends StatelessWidget {
               })),
     ]);
   }
-
-  // temporaty to create fake friends and their posts then change to http request for users data and create based on this new user
-  // void addTwoFriends(User user) {
-
-  //   user.addFriend(User.changeFriendsStories(
-  //       User.changeFriendsPosts(
-  //           User(
-  //               1,
-  //               'valera_ok',
-  //               "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-  //               1),
-  //           [
-  //             PostModel(
-  //                 id: 1,
-  //                 mainPhotoUrl:
-  //                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-  //                 description: "Lorem Ipsum is simply dummy valera_ok",
-  //                 userId: 1),
-  //             PostModel(
-  //                 id: 2,
-  //                 mainPhotoUrl:
-  //                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-  //                 description: "Lorem Ipsum is simply dummy valera_ok ",
-  //                 userId: 1),
-  //           ]),
-  //       [
-  //         StoryModel(
-  //             6,
-  //             "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-  //             '',
-  //             1)
-  //       ]));
-  //   user.addFriend(User.changeFriendsPosts(
-  //     User(
-  //         2,
-  //         'PashOk',
-  //         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-  //         2),
-  //     [
-  //       PostModel(
-  //           id: 3,
-  //           mainPhotoUrl:
-  //               "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-  //           description: "This is post for my friend.I'm  tttt_2",
-  //           userId: 2),
-  //       PostModel(
-  //           id: 4,
-  //           mainPhotoUrl:
-  //               "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-  //           description: "This is my second  post. I'm  tttt_2",
-  //           userId: 2),
-  //     ],
-  //   ));
-  // }
 }

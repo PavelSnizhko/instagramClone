@@ -13,8 +13,6 @@ class ScreenArguments {
 }
 
 class CommentPage extends StatelessWidget {
-  static const routeName = '/comment';
-
   final int id;
   const CommentPage({Key key, this.id}) : super(key: key);
 
@@ -28,8 +26,7 @@ class CommentPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigator.of(context).pop();
-            Navigator.pop(context);
+            Navigator.pop(context, post.comments.last.commentText);
           },
         ),
         title: Center(
@@ -49,6 +46,7 @@ class CommentPage extends StatelessWidget {
             padding: EdgeInsets.only(top: 10),
             child: StoryIcon(
               true,
+              false,
               id: id,
               height: 50,
               width: 50,
@@ -69,9 +67,27 @@ class CommentPage extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: post.comments.length,
                 itemBuilder: (context, index) {
-                  return Text(post.comments[index].commentText);
+                  var commentUser = Provider.of<User>(context, listen: false);
+                  return ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.only(
+                        top: 5,
+                      ),
+                      child: StoryIcon(
+                        true,
+                        false,
+                        id: commentUser.id,
+                        height: 30,
+                        width: 30,
+                        radius: 20,
+                      ),
+                    ),
+                    title: Text(commentUser.nickname),
+                    subtitle: Text(post.comments[index].commentText),
+                  );
                 })
             : Container(),
+        Container(),
         TextField(
             controller: nameController,
             decoration: InputDecoration(

@@ -5,11 +5,17 @@ import 'package:my_instagram/models/user_model.dart';
 import 'package:my_instagram/pages/story_page.dart';
 import 'package:provider/provider.dart';
 
-class StoriesList extends StatelessWidget {
+class StoriesList extends StatefulWidget {
+  @override
+  _StoriesListState createState() => _StoriesListState();
+}
+
+class _StoriesListState extends State<StoriesList> {
   @override
   Widget build(BuildContext context) {
     final feedOfStories = Provider.of<StoriesFeed>(context);
     final List<StoryModel> stories = feedOfStories.getAllStories();
+    var isWatched = false;
     return ListView(
       // physics: ClampingScrollPhysics(),
       scrollDirection: Axis.horizontal,
@@ -18,6 +24,7 @@ class StoriesList extends StatelessWidget {
         Stack(children: [
           StoryIcon(
             false,
+            isWatched,
             id: 0,
             width: 70,
             height: 70,
@@ -42,17 +49,20 @@ class StoriesList extends StatelessWidget {
               child: GestureDetector(
                 child: StoryIcon(
                   false,
+                  isWatched,
                   id: index,
                   width: 70,
                   height: 70,
                   radius: 50,
                 ),
-                onTap: () {
-                  Navigator.pushNamed(context, '/stories', arguments: index);
-                  // Navigator.of(context).push(
-                  //   MaterialPageRoute(
-                  //       builder: (context) => StoryPage(id: index)),
-                  // );
+                onTap: () async {
+                  var isActive = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => StoryPage(id: index)),
+                  ) as bool;
+                  setState(() {
+                    isWatched = isActive;
+                  });
                 },
               ),
             ),
@@ -142,10 +152,17 @@ class StoryIcon extends StatelessWidget {
   final double radius;
   final int id;
   bool isForPost = false;
+  bool _isWatched;
 
-  StoryIcon(this.isForPost,
+  StoryIcon(this.isForPost, this._isWatched,
       {Key key, this.height, this.width, this.radius, this.id})
       : super(key: key);
+
+  set isWatched(bool flag) {
+    _isWatched = flag;
+  }
+
+  bool get isWatched => _isWatched;
 
   @override
   Widget build(BuildContext context) {
@@ -154,12 +171,12 @@ class StoryIcon extends StatelessWidget {
         children: [
           Container(
             margin: !isForPost
-                ? EdgeInsets.only(left: 15, top: 10)
+                ? EdgeInsets.only(left: 15)
                 : EdgeInsets.only(left: 15),
             width: width,
             height: height,
             //TODO: To provide active and no active story and hero after correct way of use StoryIcon (maybe ok)
-            decoration: (user.getStoryById(0).active == true)
+            decoration: _isWatched
                 ? BoxDecoration(
                     image: DecorationImage(
                       image: NetworkImage(user.userAvatar),
